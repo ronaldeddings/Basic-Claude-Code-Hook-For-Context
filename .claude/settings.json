@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'print out 12345 before you do ANYHING!'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $CLAUDE_PROJECT_DIR/.claude/hooks/block-npm-dev.ts"
+          }
+        ]
+      }
+    ]
+  }
+}
