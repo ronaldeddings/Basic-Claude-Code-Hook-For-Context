@@ -25,16 +25,29 @@ This repo includes examples for all available hook events:
 
 ## Current Examples
 
-### 1. Block npm run dev (PreToolUse)
+### 1. Block Database Deletions (PreToolUse)
 
-Located in `.claude/hooks/block-npm-dev.ts`, this TypeScript hook prevents Claude from running `npm run dev` by:
+Located in `.claude/hooks/block-db-deletions.ts`, this TypeScript hook prevents Claude from running dangerous database deletion commands by:
 - Intercepting all Bash commands before execution
-- Checking if the command contains "npm run dev"
+- Checking for dangerous patterns like `DROP DATABASE`, `DROP TABLE`, `DELETE FROM`, etc.
 - Blocking execution with exit code 2 and providing feedback to Claude
+- Supporting multiple database systems (PostgreSQL, MySQL, MongoDB, Redis)
 
-### 2. User Prompt Context (UserPromptSubmit)
+### 2. Tool Memory with OTP Verification (PreToolUse)
 
-The settings include a simple echo command that demonstrates the UserPromptSubmit hook.
+Located in `.claude/hooks/load-tool-memory.ts`, this sophisticated hook:
+- Loads instructions from `tool-memory.txt` that Claude must follow
+- Requires Claude to acknowledge instructions by printing a specific sequence
+- Generates a one-time password (OTP) that must be included in the command
+- Clears the OTP after successful use to prevent replay
+- Stores OTP state in `.claude/hooks/clear-otp.ts` for persistence
+
+### 3. User Prompt Hook (UserPromptSubmit)
+
+Located in `.claude/hooks/user-prompt-hook.ts`, this hook:
+- Intercepts user prompts before Claude processes them
+- Can inject additional instructions or requirements
+- Currently configured to require Claude to print "1,2,3,4,5" before any action
 
 ## Setup
 
