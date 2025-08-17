@@ -17,36 +17,36 @@ try {
   const toolInput = data.tool_input || {};
   
   // Define dangerous database operations patterns
+  // Only match when these are actual database commands, not just words in filenames
   const dangerousPatterns = [
-    // Supabase CLI commands
+    // Supabase CLI commands - only when actually running supabase
     /\bsupabase\s+db\s+reset\b/i,
     /\bsupabase\s+postgres-config\s+delete\b/i,
     /\bsupabase\s+branches?\s+(delete|reset)\b/i,
     
-    // PostgreSQL DELETE operations
-    /\bDELETE\s+FROM\b/i,
-    /\bDELETE\s+WHERE\b/i,
+    // PostgreSQL DELETE operations - SQL syntax
+    /\bDELETE\s+FROM\s+\w+/i,
     
-    // TRUNCATE operations (removes all rows)
+    // TRUNCATE operations (removes all rows) - SQL syntax
     /\bTRUNCATE\s+(TABLE\s+)?\w+/i,
     
-    // DROP operations (removes entire objects)
-    /\bDROP\s+(TABLE|DATABASE|SCHEMA|INDEX|VIEW|SEQUENCE|FUNCTION|TRIGGER|TYPE|ROLE|USER)\b/i,
+    // DROP operations (removes entire objects) - SQL syntax
+    /\bDROP\s+(TABLE|DATABASE|SCHEMA|INDEX|VIEW|SEQUENCE|FUNCTION|TRIGGER|TYPE|ROLE|USER)\s+/i,
     /\bDROP\s+.*\s+CASCADE\b/i,
     
-    // CASCADE operations
-    /\bCASCADE\b.*\b(DELETE|DROP|TRUNCATE)\b/i,
-    /\b(DELETE|DROP|TRUNCATE)\b.*\bCASCADE\b/i,
+    // CASCADE operations with SQL keywords
+    /\bCASCADE\b.*\b(DELETE|DROP|TRUNCATE)\s+(FROM|TABLE|DATABASE)/i,
+    /\b(DELETE|DROP|TRUNCATE)\s+(FROM|TABLE|DATABASE).*\bCASCADE\b/i,
     
-    // ALTER TABLE operations that drop columns
-    /\bALTER\s+TABLE\s+.*\s+DROP\s+(COLUMN|CONSTRAINT)\b/i,
+    // ALTER TABLE operations that drop columns - SQL syntax
+    /\bALTER\s+TABLE\s+\w+\s+DROP\s+(COLUMN|CONSTRAINT)\b/i,
     
     // Dangerous psql meta-commands
     /\\drop\b/i,
     
-    // Database reset/clean operations
-    /\b(reset|clean|clear|purge|wipe|destroy).*\b(database|db|data|table)\b/i,
-    /\b(database|db|data|table).*\b(reset|clean|clear|purge|wipe|destroy)\b/i,
+    // Database reset operations - only when using actual database tools
+    /\b(psql|supabase|postgres|pg_dump|pg_restore).*\b(reset|purge|wipe|destroy).*\b(database|db|table)\b/i,
+    /\b(psql|supabase|postgres).*\b(database|db|table).*\b(reset|purge|wipe|destroy)\b/i,
   ];
   
   // Check different tool types for dangerous operations
@@ -55,9 +55,21 @@ try {
   
   switch (toolName) {
     case "Bash":
-      // Check bash commands
-      contentToCheck = toolInput.command || "";
-      contextMessage = "bash command";
+      // Check bash commands - but only if they contain database-related tools
+      const command = toolInput.command || "";
+      
+      // Skip git commands entirely - they're not database operations
+      if (command.startsWith("git ")) {
+        break;
+      }
+      
+      const isDatabaseCommand = /\b(supabase|psql|postgres|pg_dump|pg_restore)\b/i.test(command) ||
+                               /\b(mysql|mongo|redis-cli)\b/i.test(command);
+      
+      if (isDatabaseCommand) {
+        contentToCheck = command;
+        contextMessage = "bash command";
+      }
       break;
       
     case "Write":
@@ -126,12 +138,15 @@ try {
     }
   }
   
-  // Additional check for SQL keywords in any tool input
+  // Additional check for SQL keywords - but only in actual database contexts
   if (toolName === "Bash" || toolName.startsWith("mcp__")) {
-    const sqlKeywords = /\b(DELETE|TRUNCATE|DROP)\s+(FROM|TABLE|DATABASE|SCHEMA)\b/i;
-    const commandStr = JSON.stringify(toolInput).toLowerCase();
+    const commandStr = JSON.stringify(toolInput);
     
-    if (sqlKeywords.test(commandStr)) {
+    // Only check if this is actually a database operation
+    const isDatabaseContext = /\b(supabase|psql|postgres|sql|pg_dump|pg_restore)\b/i.test(commandStr);
+    const hasSqlDeletion = /\b(DELETE|TRUNCATE|DROP)\s+(FROM|TABLE|DATABASE|SCHEMA)\b/i.test(commandStr);
+    
+    if (isDatabaseContext && hasSqlDeletion) {
       console.error([
         "⚠️ POTENTIAL DATABASE OPERATION DETECTED",
         "",
