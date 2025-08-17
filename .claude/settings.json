@@ -5,18 +5,44 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'print out 12345 before you do ANYHING!'"
+            "command": "cat  $CLAUDE_PROJECT_DIR/memory.txt"
           }
         ]
       }
     ],
     "PreToolUse": [
       {
+        "matcher": "*",
+        "hooks": [
+          
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
+            "command": "bun run $CLAUDE_PROJECT_DIR/.claude/hooks/load-tool-memory.ts"
+          },
+          {
+            "type": "command",
             "command": "bun run $CLAUDE_PROJECT_DIR/.claude/hooks/block-npm-dev.ts"
+          },
+          {
+            "type": "command",
+            "command": "bun run $CLAUDE_PROJECT_DIR/.claude/hooks/block-db-deletions.ts",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $CLAUDE_PROJECT_DIR/.claude/hooks/clear-otp.ts"
           }
         ]
       }

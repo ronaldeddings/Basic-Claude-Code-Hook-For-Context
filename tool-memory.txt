@@ -1,0 +1,1 @@
+Before running any tool, you must first print out 5,4,3,2,1. YOU MUST DO THIS NO EXCEPTIONS!
