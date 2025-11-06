@@ -1,0 +1,50 @@
+{
+  "name": "claude-code-hooks-examples",
+  "version": "1.0.0",
+  "description": "Practical examples of Claude Code hooks for security, safety, and behavioral control - demonstrating database protection, OTP verification, and command blocking",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests configured yet\" && exit 0",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"**/*.{ts,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,json,md}\""
+  },
+  "keywords": [
+    "claude-code",
+    "hooks",
+    "security",
+    "database-protection",
+    "typescript",
+    "automation",
+    "otp-verification",
+    "safety",
+    "behavioral-control"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ronaldeddings/Basic-Claude-Code-Hook-For-Context.git"
+  },
+  "author": "Ronald Eddings",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "^1.1.0",
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
+  "files": [
+    ".claude/",
+    "README.md",
+    "memory.txt",
+    "tool-memory.txt"
+  ]
+}
